@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cool Gray City of Love</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f5f5f7;
+        }
+
+        .map-container {
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        #map {
+            height: 700px;
+            width: 100%;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .map-title {
+            color: #1d1d1f;
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Custom Leaflet Styling */
+        .leaflet-control-zoom {
+            border: none !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        .leaflet-control-zoom a {
+            background-color: white !important;
+            color: #1d1d1f !important;
+            border: none !important;
+            width: 36px !important;
+            height: 36px !important;
+            line-height: 36px !important;
+            font-size: 18px !important;
+            transition: background-color 0.2s ease;
+        }
+
+        .leaflet-control-zoom a:hover {
+            background-color: #f5f5f7 !important;
+        }
+
+        .leaflet-popup-content-wrapper {
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 8px;
+        }
+
+        .leaflet-popup-content {
+            margin: 10px 12px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .leaflet-popup-tip {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .location-popup {
+            font-size: 14px;
+        }
+
+        .location-popup h3 {
+            color: #1d1d1f;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .location-popup p {
+            color: #86868b;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="map-container">
+        <h1 class="map-title">Cool Gray City of Love</h1>
+        <div id="map"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <script>
+        // Initialize the map centered on San Francisco
+        const map = L.map('map', {
+            center: [37.7749, -122.4194],
+            zoom: 13,
+            zoomControl: true,
+            scrollWheelZoom: true,
+            zoomAnimation: true,
+            markerZoomAnimation: true
+        });
+
+        // Using CartoDB's Voyager tiles for more vibrant colors
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd'
+        }).addTo(map);
+
+        // Custom marker icon
+        const customIcon = L.divIcon({
+            className: 'custom-marker',
+            html: `<svg width="30" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" 
+                          fill="#FF3B30" 
+                          stroke="white" 
+                          stroke-width="2"/>
+                  </svg>`,
+            iconSize: [30, 40],
+            iconAnchor: [15, 40],
+            popupAnchor: [0, -40]
+        });
+
+        // Test locations around San Francisco
+        const locations = [
+            {
+                lat: 37.7249303,
+                lng: -123.0302779,
+                title: "1. The Outer Limits",
+                description: "The Farallon Islands - The most forbidding piece of real estate to be found within the borders of any major city in the world."
+            },
+            {
+                lat: 37.7833329,
+                lng: -122.4120871,
+                title: "2. Adventures in the Skin Trade",
+                description: "The Tenderloin is the creepy Mr. Hyde to the rest of San Francisco's respectable Dr. Jekyll."
+            },
+            {
+                lat: 37.8290872,
+                lng: -122.4440193,
+                title: "3. The Alcatraz Triangle",
+                description: "During the 19th century, at low tide Arch rock used to appear above the bay like the eye of a needle. It was dynamited in 1901."
+            },
+            {
+                lat: 37.8017715,
+                lng: -122.4057919,
+                title: "4. Stairway to Heaven",
+                description: "The Filbert Steps run between Coit Tower and the waterfront, but they take you to the best destination of all: nowhere."
+            },
+            {
+                lat: 37.9936865,
+                lng: -122.9611538,
+                title: "5. The Harbor at the End of the World",
+                description: "Point Reyes sits on a different tectonic plate than the rest of North America."
+            },
+            {
+                lat: 37.741563,
+                lng: -122.44576,
+                title: "6. The Canyon",
+                description: "Glen Canyon is not only the most peculiar geographical anomaly in San Francisco - a concave feature in a convex city - it is also the least known."
+            },
+            {
+                lat: 37.802935,
+                lng: -122.450998,
+                title: "7. The Temple",
+                description: "A vast, purposeless rotunda supported by mighty Corinthian columns and surrounded by a mysterious, vaguely ruinlike colonade, it looms above its tranquil lagoon like one of those illogical, pseudo-classical structures that appear in the backgrounds of baroque paintings."
+            },
+            {
+                lat: 37.787202,
+                lng: -122.473868,
+                title: "8. The Long March",
+                description: "Mountain Lake is one of the stranger historical sites in San Francisco. It is hidden away at the end of a swanky dead-end street in the bland, pleasently upscale Richmond District, two blocks away from bustling Clement Street."
+            },
+            {
+                lat: 37.8017859,
+                lng: -122.4088282,
+                title: "9. The Borrowed City",
+                description: "Observations about San Francisco's weather tend to be variations on Mark Twain's supposed quip - The coldest winter I ever spent was summer in San Francisco."
+            },
+            {
+                lat: 37.7716115,
+                lng: -122.398836,
+                title: "10. The Lost River",
+                description: "Heretical as it is to say, much of San Francisco's terrain became more attractive when the city was built. But there is one part of the city's primordial landscape that was breathtakingly beautiful, and whose loss was tragic: its vanquished waters."
+            },
+            {
+                lat: 37.7643215,
+                lng: -122.4275668,
+                title: "11. Our Lady of Sorrows",
+                description: "With its two-tiered colonnaded facade and four-foot-thick walls, the whitewashed adobe reposes on busy, palm tree-lines Dolores Street like a dignified old don, a white-haired survivor from a distant era."
+            },
+            {
+                lat: 37.7945795,
+                lng: -122.4207168,
+                title: "12. Maximum City",
+                description: "Despite suffering the indignity of bring used by the city as a defacto tourist tax, the cable cars are real."
+            },
+            {
+                lat: 37.7938686,
+                lng: -122.4840337,
+                title: "13. Outside Sands",
+                description: "Not only does Baker Beach look back at the Golden Gate; it also faces the two mighty formations that guard it, the Marin Headlands and Lands end."
+            },
+            {
+                lat: 37.8000392,
+                lng: -122.4591046,
+                title: "14. Pluto on the Pacific",
+                description: "When Mexico won independence from Spain in 1821, the news took more than a year to reach the Presidio. The Spanish outpost was so cut off from the world that it might as well have been called Pluto on the Pacific."
+            },
+            {
+                lat: 37.782205,
+                lng: -122.4090956,
+                title: "15. The Chronicler",
+                description: "Herb Caen of the San Francisco Chronicle was a living link to an almost mythical age, the fedora-hat era when a sweaty glamour hovered over the who sidewalk-pounding enterprise of being a daily man."
+            },
+            {
+                lat: 37.7445817,
+                lng: -122.4203552,
+                title: "16. The Country in the City",
+                description: "Bernal Heights is the city's trickiest psycogeographical conundrum. Its atmosphere is unmistakable, ineffable, and quintessentially San Francisco. Yet it is incredibly hard to describe."
+            },
+            {
+                lat: 37.7948518,
+                lng: -122.4091953,
+                title: "17. Huck's Hideaway",
+                description: "It cannot be a coincidence that one of the world's greatest cosmopolitan party towns was founded by a runaway who had just met a mixed-race hottie at an all-nighter."
+            },
+            {
+                lat: 37.7243084,
+                lng: -122.3668649,
+                title: "18. The Dead City",
+                description: "Ground zero for these lost kingdoms is the old industrial shoreline, the complex and chaotic and polluted waterfront that runs between Mission Bay and Candlestick Park."
+            },
+            {
+                lat: 37.8082825,
+                lng: -122.477486,
+                title: "19. The Bridge",
+                description: "The Bridge returns San Francisco to the comforting pre-Copernican center of the universe. But it also reveals how close to the edge it is."
+            },
+            {
+                lat: 37.7861197,
+                lng: -122.3954887,
+                title: "20. Californio Dreaming",
+                description: "On the high ground that formed the southern end of the cove, near present-day First and Harrison Streets, the guests feasted, caroused, and enjoyed the beautiful view of the bay all day, returning to Leese's house in the evening to resume dancing."
+            },
+            {
+                lat: 37.7958955,
+                lng: -122.4176074,
+                title: "21. The Puertozuela",
+                description: "Every low point in San Francisco's terrain collects history the way a fench in the desert collects tumbleweeds, and the saddle at Pacific and Jones has probably collected the most of all."
+            },
+            {
+                lat: 37.7821205,
+                lng: -122.5078261,
+                title: "22. The Lotus-Eaters",
+                description: "The Presidio maintained the dignity of government and war, and the mission the dignity of religion, so that for the traffickers at the cove little dignity remained or was required."
+            },
+            {
+                lat: 37.7946595,
+                lng: -122.4117027,
+                title: "23. The Last Roll",
+                description: "The deepest San Francisco ritual takes place late every night on a shabby street corner in the heart of the city."
+            },
+            {
+                lat: 37.8104852,
+                lng: -122.4796045,
+                title: "24. The Farce",
+                description: "Captain John C Fremont had a fatal Byronic streak, and it led him to encourage a pointless and unprovoked revolt - the Bear Flag revolt."
+            },
+            {
+                lat: 37.7413504,
+                lng: -122.4357067,
+                title: "25. A Streetcar to Subduction",
+                description: "Wahrhaftig chose Billy Goat Hill to open his book because the three most important types of rock found in San Francisco are exposed there, 'in a deceptively simple and orderly relationship.'"
+            },
+            {
+                lat: 37.7950907,
+                lng: -122.4056413,
+                title: "26. The Delirium",
+                description: "Brannon marches down Montgomery Street at the water's edge and then up a block to Portsmouth Square, yelling at the top of his lungs, 'Gold! Gold! Gold from the American River!'"
+            },
+            {
+                lat: 37.7499603,
+                lng: -122.4724715,
+                title: "27. The Balcony",
+                description: "In those youthful days, I went for straight beauty. I had not yet learned to appreciate the charms of the banal. That led me to ignore not only Larson Peak but also the entire western part of the city, with the exception of the beach and Golden Gate Park."
+            },
+            {
+                lat: 37.7082764,
+                lng: -122.4049186,
+                title: "28. City Limits",
+                description: "Nondescript, working-class, and devoid of tourist attractions, San Francisco's southern frontier is a ragged Cinderella scrubbing the pots of the glamorous Painted Lady neighborhoods of the north."
+            },
+            {
+                lat: 37.7882786,
+                lng: -122.4036052,
+                title: "29. The Torch",
+                description: "The neighborhood was called Happy Valley, but for many of the men who lived there, that name must have felt like a cruel joke."
+            },
+            {
+                lat: 37.7644632,
+                lng: -122.4852469,
+                title: "30. The Park",
+                description: "The great verdant rectangle that runs from the Haight to the sea came into existance because 20 years after its chaotic birth, San Francisco had finally outgrown its wild youth and was ready to settle down."
+            },
+            {
+                lat: 37.7922628,
+                lng: -122.4139763,
+                title: "31. Hill of Hate",
+                description: "I've lived in the neighborhood for 30 years, my kids grew up playing in Huntington Park, I've walked past that mansion hundreds of times, but I have no idea what, if anything, goes on in there."
+            },
+            {
+                lat: 37.7593211,
+                lng: -122.4510239,
+                title: "32. Happy Trails",
+                description: "In modern cities, concrete covers everything, and what isn't covered is fenced off. But not in San Francisco. This city fought the earth, and the earth frequently won."
+            },
+            {
+                lat: 37.7980175,
+                lng: -122.4144388,
+                title: "33. The Balloon",
+                description: "The most enchanting view of downtown San Francisco is found from a little-known place high on Russian Hill called Ina Donna Cool-brith Park."
+            },
+            {
+                lat: 37.7954467,
+                lng: -122.3961885,
+                title: "34. The Front Door",
+                description: "It is best seen at night. It is better still if a white shroud of fog - that ghostly mantilla that Dashiell Hammett called 'thin, clammy and penetrant' - obscures the soulless towers behind it. But above all, it must be seen from the water. Only then do its ghosts rattle their anchor chains."
+            },
+            {
+                lat: 37.7787957,
+                lng: -122.406977,
+                title: "35. A Tale of Two Earthquakes",
+                description: "Apocalyptic events have a weird erotic pull: At this very moment, Godzilla is destroying Tokyo again on some cable channel. But they are inaccesible. They're too frightening, too alien, too vast."
+            },
+            {
+                lat: 37.7887048,
+                lng: -122.4101269,
+                title: "36. City Beautiful",
+                description: "Every time I've been on this corner, I've always had a subliminal feeling of urban elegance. I never knew why I had that feeling. Now I do. And that knowledge has permanantly altered the way I see not just this intersection but San Francisco's entire downtown."
+            },
+            {
+                lat: 37.7945718,
+                lng: -122.4097022,
+                title: "37. Trying to Find Chinatown",
+                description: "A phantasmagorical kaleidoscope of glittering lights, exotic buildings with winged roofs, hordes of mysterious people packing the narrow streets - I felt like I had been transported to a parrallel universe where a perpetual night was perpetually illuminated."
+            },
+            {
+                lat: 37.775113,
+                lng: -122.5138252,
+                title: "38. Deserted Cities of the Heart",
+                description: "The old amusement park at the Great Highway and Balboa was the city's last low-IQ., high-kicks, comic book link with a sleaxy, fun-loving America."
+            },
+            {
+                lat: 37.8047562,
+                lng: -122.4297439,
+                title: "39. Port of Embarkation",
+                description: "But one place stands out above them all: Fort Mason, formarly known as the San Francisco Port of Embarkation. For it was from its piers that 1,647,174 troops shipped west - two-thirds of all the troops sent to the Pacific theater. For many thousands, who would not survive the island hells of Tarawa and Iwo Jima, it was the last piece of American soil they would ever touch. "
+            },
+            {
+                lat: 37.8013442,
+                lng: -122.4101669,
+                title: "40. The End of the Road",
+                description: "The holy trinity of cheap sex, sketchy bars, and low rents have always attracted writers and artists."
+            },
+            {
+                lat: 37.7854979,
+                lng: -122.4353865,
+                title: "41. The Haunted House",
+                description: "A geologist would call the block of Fillmore Street between Post and Sutter a 'triple junction'. It is one of those three-way collisions where a swanky part of town crashes into a seedy one, while a completely different quarter sidesweeps both of them."
+            },
+            {
+                lat: 37.7700302,
+                lng: -122.4495909,
+                title: "42. If You Were a Bird",
+                description: "And by the summer of 1967, it had become so powerful that 75,000 young people from around the world flooded into the Haight-Ashbury. They called it the Summer of Love, and it remains one of the most enigmatic episodes in American history."
+            },
+            {
+                lat: 37.760901,
+                lng: -122.4376129,
+                title: "43. The Greatest of These",
+                description: "Men standing in line at the vast Club Baths at Eighth and Howard jokingly called the address 'AIDS and Howard' but went in anyway."
+            },
+            {
+                lat: 37.7815888,
+                lng: -122.3957211,
+                title: "44. Rota Fortunae",
+                description: "Every 10th person sitting with a laptop at Caffe Centro is a multimillionaire. Most of them are under 40. A lot of them are under 30."
+            },
+            {
+                lat: 37.8064203,
+                lng: -122.4254372,
+                title: "45. The Sand Castle",
+                description: "It is a real beach: You can wade into the bay here and swim until you drown, as banker William Ralston did in 1875 when his financial empire collapsed."
+            },
+            {
+                lat: 37.7938952,
+                lng: -122.4047816,
+                title: "46. Taking It to the Streets",
+                description: "People making an ordinary salary cannot move here. San Francisco is on the verge of becoming a gated community."
+            },
+            {
+                lat: 37.8023991,
+                lng: -122.4083971,
+                title: "47. Genius Loci",
+                description: "Telegraph Hill is quintessential San Francisco. If you compressed the entire city between two tectonic plates, it is the diamond that would emerge."
+            },
+            {
+                lat: 37.7097614,
+                lng: -122.393585,
+                title: "48. Dancing on the brink of the world",
+                description: "When Greece was in its archaic period, and for more than a thousand years after that, this was a swankier San Francisco address than Pacific Heights or Sea Cliff."
+            },
+            {
+                lat: 37.7847732,
+                lng: -122.5060773,
+                title: "49. Lands End",
+                description: "I fell in love with San Francisco when I was a kid growing up in the Berkeley Hills and looked across the bay to what I thought was the most miraculous city in the world, a shining Valhalla at the end of a rainbow bridge."
+            },
+            
+        ];
+
+        // Add markers for each location
+        locations.forEach(location => {
+            const popupContent = `
+                <div class="location-popup">
+                    <h3>${location.title}</h3>
+                    <p>${location.description}</p>
+                </div>
+            `;
+
+            L.marker([location.lat, location.lng], { icon: customIcon })
+                .bindPopup(popupContent)
+                .addTo(map);
+        });
+
+        // Smooth zoom
+        map.on('zoomstart', function() {
+            document.getElementById('map').style.transition = 'transform 0.25s ease';
+        });
+    </script>
+</body>
+</html>
