@@ -39,6 +39,15 @@
             text-align: center;
         }
 
+        .map-subtitle {
+            color: #86868b;
+            font-size: 18px;
+            font-weight: 400;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+
         /* Custom Leaflet Styling */
         .leaflet-control-zoom {
             border: none !important;
@@ -95,8 +104,11 @@
 </head>
 <body>
     <div class="map-container">
-        <h1 class="map-title">Cool Gray City of Love</h1>
-        <div id="map"></div>
+        <div class="map-container">
+            <h1 class="map-title">Cool Gray City of Love</h1>
+            <h2 class="map-subtitle">Mapping Gary Kamiya's 49 Views</h2>
+            <div id="map"></div>
+        </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
