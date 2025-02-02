@@ -47,6 +47,27 @@
             text-align: center;
         }
 
+        @media screen and (max-width: 768px) {
+            .map-container {
+                margin: 0;        /* Removes the 20px top/bottom margin */
+                padding: 0;       /* Removes the 20px left/right padding */
+                max-width: 100%;  /* Ensures container takes full width */
+            }
+
+            #map {
+                border-radius: 0; /* Removes rounded corners on mobile */
+            }
+
+            .map-title {
+                margin: 20px 15px 8px 15px;  /* Adds spacing around title */
+                                            /* Format: top right bottom left */
+            }
+
+            .map-subtitle {
+                margin: 0 15px 20px 15px;    /* Adds spacing around subtitle */
+            }
+        }
+
 
         /* Custom Leaflet Styling */
         .leaflet-control-zoom {
